@@ -3,6 +3,12 @@
 
 session_start();
 
+ // variable to calculate credits
+ $creditsAllowed = 0;
+
+ // result
+ $result = "";
+
 include('../includes/config.php');
 
 if(isset($_SESSION['Enrollment_No']))
@@ -90,7 +96,78 @@ header('location: dashboard.php');
     function confSubmit(form) {
     if (confirm("Are you sure you want to submit the form?")) 
     {
-        form.submit();
+        var sbj_1 = document.getElementById('subj1').value;
+        var sbj_2 = document.getElementById('subj2').value;
+        var sbj_3 = document.getElementById('subj3').value;
+        var sbj_4 = document.getElementById('subj4').value;
+        var sbj_5 = document.getElementById('subj5').value;
+
+        // Regular expression to capture the last character of a word to find number of credits for each course
+        const regex = /\w$/;
+
+        // Input string
+        const inputString_1 = sbj_1;
+        // Use the regular expression to find the last character
+        const match_1 = inputString_1.match(regex);
+        const credit_sbj_1 = match_1[0];
+
+        // Input string
+        const inputString_2 = sbj_2;
+        // Use the regular expression to find the last character
+        const match_2 = inputString_2.match(regex);
+        const credit_sbj_2 = match_2[0];
+
+        // Input string
+        const inputString_3 = sbj_3;
+        // Use the regular expression to find the last character
+        const match_3 = inputString_3.match(regex);
+        const credit_sbj_3 = match_3[0];
+
+        // Input string
+        const inputString_4 = sbj_4;
+        // Use the regular expression to find the last character
+        const match_4 = inputString_4.match(regex);
+        const credit_sbj_4 = match_4[0];
+
+        // Input string
+        const inputString_5 = sbj_5;
+        // Use the regular expression to find the last character
+        const match_5 = inputString_5.match(regex);
+        const credit_sbj_5 = match_5[0];
+
+
+        
+        // converting the string credit number to integer
+        credit_int_sbj1 =parseInt(credit_sbj_1);
+        credit_int_sbj2 =parseInt(credit_sbj_2);
+        credit_int_sbj3 =parseInt(credit_sbj_3);
+
+        var total_credits =credit_int_sbj1 + credit_int_sbj2 + credit_int_sbj3;
+        
+        
+        if(credit_sbj_4 != 'n'){
+            credit_int_sbj4 = parseInt(credit_sbj_4);
+            total_credits+=credit_int_sbj4;
+        }
+        if(credit_sbj_5 != 'n'){
+            credit_int_sbj5 = parseInt(credit_sbj_5);
+            total_credits+=credit_int_sbj5;
+        }
+
+        alert(total_credits);
+        
+        if (total_credits <= 18 && <?php echo $creditsAllowed; ?> == 18) {
+        alert('true');
+    }
+
+
+
+        // alert(sbj_1);
+        // alert(sbj_2);
+        // alert(sbj_3);
+        // alert(sbj_4);
+        // alert(sbj_5);
+        // form.submit();
     }
     else
     {
@@ -100,6 +177,15 @@ header('location: dashboard.php');
 
 
     </script>
+
+    <style>
+        /* Add CSS for horizontal alignment */
+        .rs-select2 label {
+            display: inline-block;
+            margin-right: 20px; /* Adjust the margin as needed */
+            text-align: center;
+        }
+    </style>
 
 
 
@@ -201,45 +287,75 @@ header('location: dashboard.php');
                         </div>
 
                         <div class="form-row">
-                            <div class="name">Previous Results: </div>
+                            <div class="name">Previous Results:</div>
                             <div class="value">
                                 <div class="input-group">
                                     <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="Category" required="">
-                                            <option disabled="disabled" selected="selected">Choose option</option>
-                                            <option value="Good Pass">Good Pass</option>
-                                            <option value="Conditional Pass">Conditional Pass</option>
-                                            <option value="Failed">Failed</option>
-                                        </select>
-                                        <div class="select-dropdown"></div>
+                                        <label>
+                                            <input type="radio" name="Category" value="Good Pass" onClick="determineCredit('Good Pass')"> Good Pass
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="Category" value="Conditional Pass" onClick="determineCredit('Conditional Pass')"> Conditional Pass
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="Category" value="Failed" onClick="determineCredit('Failed')"> Failed
+                                        </label>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+
+
+                        <div id="creditsContainer" style="margin-bottom:30px;">
+                            <h5>You are allowed to register for credit</h5>
+                        </div>
+
+                        <script>
+                            // show how many credits the user can register for
+                            function determineCredit(x){
+                                if(x == 'Good Pass'){
+                                    document.getElementById('creditsContainer').innerHTML = "You are allowed to register for 18 credit";
+                                    <?php
+                                        $creditsAllowed = 18;
+                                        $result = "Good Pass";
+                                    ?>
+                                }else if(x == 'Conditional Pass'){
+                                    document.getElementById('creditsContainer').innerHTML = "You are allowed to register for 9 credit";
+                                    <?php
+                                        $creditsAllowed = 9;
+                                        $result = "Conditional Pass";
+                                    ?>
+                                }else{
+                                    document.getElementById('creditsContainer').innerHTML = "You have to repeat your previous semester";
+                                    $result = "Failed";
+                                }
+                            }
+                        </script>
+
+                        
 
                         <div class="form-row">
                             <div class="name">Subject 1</div>
                             <div class="value">
                                 <div class="input-group">
                                     <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="Subject_1" required="">
+                                        <select name="Subject_1" id="subj1" required="">
                                             <option disabled="disabled" selected="selected">Choose option</option>
-                                            <?php 
+                                            <?php
+                                                $subject_query = mysqli_query($database, "SELECT DISTINCT Course_Code, Course_Title, Course_Credit FROM Subjects");
 
-                                            $subject_query = mysqli_query($database,"SELECT DISTINCT Course_Code from Subjects");
-
-
-                                            $count = 0;
-                                            while($row=mysqli_fetch_array($subject_query))
-                                            {
-                                             ?>
-                                             <option><?php print_r($row[0]) ?></option>
-
-                                             <?php 
-                                                $count++;
-                                            } 
+                                                $count = 0;
+                                                while ($row = mysqli_fetch_array($subject_query)) {
+                                                    ?>
+                                                    <option value="<?php echo $row['Course_Code']; ?>"><?php echo $row['Course_Code'] . ' - ' . $row['Course_Title'] . ' - ' . $row['Course_Credit']; ?></option>
+                                                    <?php
+                                                    $count++;
+                                                }
                                             ?>
+
                                         </select>
+
                                         <div class="select-dropdown"></div>
                                     </div>
                                 </div>
@@ -252,22 +368,18 @@ header('location: dashboard.php');
                             <div class="value">
                                 <div class="input-group">
                                     <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="Subject_2" required="">
+                                        <select name="Subject_2" id="subj2" required="">
                                             <option disabled="disabled" selected="selected">Choose option</option>
-                                            <?php 
+                                            <?php
+                                                $subject_query = mysqli_query($database, "SELECT DISTINCT Course_Code, Course_Title, Course_Credit FROM Subjects");
 
-                                            $subject_query = mysqli_query($database,"SELECT DISTINCT Course_Code from Subjects");
-
-
-                                            $count = 0;
-                                            while($row=mysqli_fetch_array($subject_query))
-                                            {
-                                             ?>
-                                             <option><?php print_r($row[0]) ?></option>
-
-                                             <?php 
-                                                $count++;
-                                            } 
+                                                $count = 0;
+                                                while ($row = mysqli_fetch_array($subject_query)) {
+                                                    ?>
+                                                    <option value="<?php echo $row['Course_Code']; ?>"><?php echo $row['Course_Code'] . ' - ' . $row['Course_Title'] . ' - ' . $row['Course_Credit']; ?></option>
+                                                    <?php
+                                                    $count++;
+                                                }
                                             ?>
                                         </select>
                                         <div class="select-dropdown"></div>
@@ -281,22 +393,18 @@ header('location: dashboard.php');
                             <div class="value">
                                 <div class="input-group">
                                     <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="Subject_3" required="">
+                                        <select name="Subject_3" id="subj3" required="">
                                             <option disabled="disabled" selected="selected">Choose option</option>
-                                            <?php 
+                                            <?php
+                                                $subject_query = mysqli_query($database, "SELECT DISTINCT Course_Code, Course_Title, Course_Credit FROM Subjects");
 
-                                            $subject_query = mysqli_query($database,"SELECT DISTINCT Course_Code from Subjects");
-
-
-                                            $count = 0;
-                                            while($row=mysqli_fetch_array($subject_query))
-                                            {
-                                             ?>
-                                             <option><?php print_r($row[0]) ?></option>
-
-                                             <?php 
-                                                $count++;
-                                            } 
+                                                $count = 0;
+                                                while ($row = mysqli_fetch_array($subject_query)) {
+                                                    ?>
+                                                    <option value="<?php echo $row['Course_Code']; ?>"><?php echo $row['Course_Code'] . ' - ' . $row['Course_Title'] . ' - ' . $row['Course_Credit']; ?></option>
+                                                    <?php
+                                                    $count++;
+                                                }
                                             ?>
                                         </select>
                                         <div class="select-dropdown"></div>
@@ -310,22 +418,18 @@ header('location: dashboard.php');
                             <div class="value">
                                 <div class="input-group">
                                     <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="Subject_4" required="">
+                                        <select name="Subject_4" id="subj4" required="">
                                             <option disabled="disabled" selected="selected">Choose option</option>
-                                            <?php 
+                                            <?php
+                                                $subject_query = mysqli_query($database, "SELECT DISTINCT Course_Code, Course_Title, Course_Credit FROM Subjects");
 
-                                            $subject_query = mysqli_query($database,"SELECT DISTINCT Course_Code from Subjects");
-
-
-                                            $count = 0;
-                                            while($row=mysqli_fetch_array($subject_query))
-                                            {
-                                             ?>
-                                             <option><?php print_r($row[0]) ?></option>
-
-                                             <?php 
-                                                $count++;
-                                            } 
+                                                $count = 0;
+                                                while ($row = mysqli_fetch_array($subject_query)) {
+                                                    ?>
+                                                    <option value="<?php echo $row['Course_Code']; ?>"><?php echo $row['Course_Code'] . ' - ' . $row['Course_Title'] . ' - ' . $row['Course_Credit']; ?></option>
+                                                    <?php
+                                                    $count++;
+                                                }
                                             ?>
                                         </select>
                                         <div class="select-dropdown"></div>
@@ -341,22 +445,18 @@ header('location: dashboard.php');
                             <div class="value">
                                 <div class="input-group">
                                     <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="Subject_5" required="">
+                                        <select name="Subject_5" id="subj5" required="">
                                             <option disabled="disabled" selected="selected">Choose option</option>
-                                            <?php 
+                                            <?php
+                                                $subject_query = mysqli_query($database, "SELECT DISTINCT Course_Code, Course_Title, Course_Credit FROM Subjects");
 
-                                            $subject_query = mysqli_query($database,"SELECT DISTINCT Course_Code from Subjects");
-
-
-                                            $count = 0;
-                                            while($row=mysqli_fetch_array($subject_query))
-                                            {
-                                             ?>
-                                             <option><?php print_r($row[0]) ?></option>
-
-                                             <?php 
-                                                $count++;
-                                            } 
+                                                $count = 0;
+                                                while ($row = mysqli_fetch_array($subject_query)) {
+                                                    ?>
+                                                    <option value="<?php echo $row['Course_Code']; ?>"><?php echo $row['Course_Code'] . ' - ' . $row['Course_Title'] . ' - ' . $row['Course_Credit']; ?></option>
+                                                    <?php
+                                                    $count++;
+                                                }
                                             ?>
                                         </select>
                                         <div class="select-dropdown"></div>
